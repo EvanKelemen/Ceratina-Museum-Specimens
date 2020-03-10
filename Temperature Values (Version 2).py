@@ -40,14 +40,26 @@ for year_number in year:
         arcpy.Delete_management("air_ave_" + year_number + "_" + month_number)
 
 
-
-
-
-env.workspace = r"C:/Users/evank/Documents/ArcGIS/Projects/Temperature (that opens)/Temperature Variable/Yearly Average/"
+import arcpy
+import os
+from arcpy import env
+from arcpy.sa import *
+arcpy.env.workspace = r"C:/Users/evank/Documents/ArcGIS/Projects/Temperature (that opens)/Temperature Variable/Yearly Average/"
 rasters = arcpy.ListRasters()
 rasters
-outFolder = r"C:/Users/evank/Documents/ArcGIS/Projects/Temperature (that opens)/Temperature Variable/Yearly Average/Year_Average"
+outFolder = r"C:/Users/evank/Documents/ArcGIS/Projects/Temperature (that opens)/Temperature Variable/Yearly Average"
 # Loop through the list of rasters
 for inRaster in rasters:
     # Set the outputname for each output to be the same as the input
-    outRaster = outFolder + "\\" + inRaster
+    outRaster = outFolder + "/" + inRaster
+    in_point_features = r"C:/Users/evank/Documents/ArcGIS/Projects/Temperature (that opens)/Temperature (that opens).gdb/Centroids"
+    out_point_features = (r"C:/Users/evank/Documents/ArcGIS/Projects/Temperature (that opens)/Centroids_temps" + inRaster + ".shp")
+    arcpy.MakeRasterLayer_management(outRaster, "temp")
+    arcpy.management.ProjectRaster("temp",
+                                   r"C:\Users\evank\Documents\ArcGIS\Projects\Temperature (that opens)\Temperature (that opens).gdb\temp_ProjectRast",
+                                   "GEOGCS['GCS_WGS_1984',DATUM['D_WGS_1984',SPHEROID['WGS_1984',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]]",
+                                   "NEAREST", "0.5 0.5", None, None,
+                                   "GEOGCS['GCS_WGS_1984',DATUM['D_WGS_1984',SPHEROID['WGS_1984',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]]",
+                                   "NO_VERTICAL")
+    ExtractValuesToPoints(in_point_features, "temp_ProjectRast", out_point_features, "NONE", "Value_ONLY")
+    #arcpy.Delete_management("temp")
