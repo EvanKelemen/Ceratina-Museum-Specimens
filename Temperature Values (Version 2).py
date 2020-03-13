@@ -1,5 +1,7 @@
 # Creating the temperature values for morphological data
 # Annual Mean Temperature
+
+# LOADS RASTERS For each month and year
 month = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
 year = ["2016", "2017"]
 
@@ -11,7 +13,7 @@ for year_number in year:
             "time '" + month_number + "/01/" + year_number + " 12:00:00 AM'", "BY_VALUE", "CENTER")
 
 
-
+# AVERAGES THE RASTERS then deletes extra rasters
 #Import system modules
 import arcpy
 from arcpy import env
@@ -46,7 +48,6 @@ from arcpy import env
 from arcpy.sa import *
 arcpy.env.workspace = r"C:/Users/evank/Documents/ArcGIS/Projects/Temperature (that opens)/Temperature Variable/Yearly Average/"
 rasters = arcpy.ListRasters()
-rasters
 outFolder = r"C:/Users/evank/Documents/ArcGIS/Projects/Temperature (that opens)/Temperature Variable/Yearly Average"
 # Loop through the list of rasters
 for inRaster in rasters:
