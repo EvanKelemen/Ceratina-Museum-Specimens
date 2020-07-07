@@ -1,163 +1,276 @@
 #-------------------------------------------------------------------------------
 # Analysising morphological and temperature data
 #-------------------------------------------------------------------------------
-# Makes data.frame morph.data
-source("C:/Users/evank/OneDrive/Desktop/Maps/Ceratina-Maps/morphologicaldata.R")
-# Creates the function to combine temperature data to morphological data
-source("C:/Users/evank/OneDrive/Desktop/Maps/Ceratina-Maps/Combining.temperature.data.R")
+library(quantreg)
+library(nlme)
+library(chron)
+library(lmtest)
+install.packages("AICcmodavg")
+library(bbmle)
+library(AICcmodavg)
 
-
+# Makes data.frame morph.data.lat.long
+source("C:/Users/evank/OneDrive/Desktop/Maps/Ceratina-Maps/Land.Use.Combining.R")
 
 
 # >>>>>>>>>>>> Plotting Data <<<<<<<<<<<<<<<<<<<<<<<<<<<
 #Plotting the data to visualize it
-plot(Head.Width.mm ~ Specimen.Year, data = morph.data, cex = 2, cex.lab = 2, cex.axis = 2)
-abline(159.254448, -0., col = "blue")
-summary(lm(Head.Width.mm ~ Specimen.Year + Sex, data = morph.data))
+
+#Plotting by year
+#head.vs.year.var.lm <- lme(Head.Width.mm ~ Specimen.Year + Sex, weights = varFixed(~Specimen.Year), 
+#                       random = ~1|EcoRegion, 
+#                       data = morph.data.temp)
+#head.vs.year.var.interaction.lm <- lme(Head.Width.mm ~ Specimen.Year * Sex, weights = varFixed(~Specimen.Year), 
+#                           random = ~1|EcoRegion, data = morph.data.temp)
+head.vs.year.lm <- lme(Head.Width.mm ~ Specimen.Year + Sex + Long + Lat + Elevation,  
+                           random = list(EcoRegion = ~1), 
+                       data = morph.data.temp)
+head.vs.year.interaction.lm <- lme(Head.Width.mm ~ Specimen.Year * Sex + Long + Lat + Elevation,  
+                                   random =list(EcoRegion = ~1), data = morph.data.temp)
+head.vs.year.interaction.lm <- lm(Head.Width.mm ~ Specimen.Year + Sex + Long + Lat + Elevation,  
+                                   #random =list(EcoRegion = ~1), 
+                                  data = morph.data.temp)
+plot(head.vs.year.var.lm)
+summary(head.vs.year.interaction.lm)
+r.squared.lme(head.vs.year.lm)
+lrtest(head.vs.year.lm, head.vs.year.interaction.lm)
+ICtab( head.vs.year.var.lm, head.vs.year.var.interaction.lm,
+       head.vs.year.lm, head.vs.year.interaction.lm, weights = TRUE)
+
+#Plotting
+tiff("Year.vs.Head.Width.tiff", width = 7, height = 5, pointsize = 1/300, units = 'in', res = 300)
+par(mar=c(4.5,5.5, 1,2))
+plot(Head.Width.mm ~ Specimen.Year, data = morph.data.land.use[morph.data.land.use$Sex == "Female", ],
+     ylab = "Head Width (mm)",
+     xlab = "Year",
+     ylim = c(min(morph.data.temp$Head.Width.mm,  na.rm=T) - 0.1, max(morph.data.temp$Head.Width.mm, na.rm=T) + 0.1),
+     cex.lab = 1.9, cex.axis = 1.75, tck = 0.02, pch = 16)
+points(Head.Width.mm ~ Specimen.Year, data = morph.data.temp[morph.data.temp$Sex == "Male", ],
+       col = "coral", pch = 17)
+#abline(head.vs.year.lm[[1]][1], head.vs.year.lm[[1]][2], col = "blue", lwd = 3)
+#abline(head.vs.year.lm[[1]][1]  + head.vs.year.lm[[1]][3], head.vs.year.lm[[1]][2], 
+#       col = "red", lwd = 3 , lty = 2)
+legend(1900, 1.4, legend=c("Female", "Male"),
+       col=c("black", "coral"), pch= c(16, 17), cex=0.8, box.lty=0, bg="transparent")
+dev.off()
+
+
+#----
+head.vs.average.temp.lm <- lme(Head.Width.mm ~ Long + Sex,  
+                               random = ~1|EcoRegion, data = morph.data.temp)
+head.vs.average.temp.interaction.lm <- lme(Head.Width.mm ~ Long * Sex,  
+                                           random = ~1|EcoRegion, data = morph.data.temp)
+plot(head.vs.average.temp.interaction.lm)
+qqnorm(head.vs.average.temp.interaction.lm)
+summary(head.vs.average.temp.interaction.lm)
+r.squared.lme(head.vs.average.temp.interaction.lm)
+lrtest(head.vs.average.temp.lm, head.vs.average.temp.interaction.lm)
+ICtab(head.vs.average.temp.lm, head.vs.average.temp.interaction.lm, weights = TRUE)
+
+par(mar=c(4.5,5.5, 1,2))
+plot(Head.Width.mm ~ Long, data = morph.data.temp[morph.data.temp$Sex == "Female", ],
+     ylab = "Head Width (mm)",
+     xlab = "Average Summer Temperature (°C)",
+     ylim = c(min(morph.data.temp$Head.Width.mm,  na.rm=T) - 0.1, max(morph.data.temp$Head.Width.mm, na.rm=T) + 0.1),
+     cex.lab = 1.5, cex.axis = 0.8, tck = 0.02, pch = 16)
+points(Head.Width.mm ~ Long, data = morph.data.temp[morph.data.temp$Sex == "Male", ],
+       col = "grey", pch = 17)
+abline(head.vs.average.fixed[1], head.vs.average.fixed[2], col = "black", lwd = 3)
+abline(head.vs.average.fixed[1]  + head.vs.average.fixed[3], head.vs.average.fixed[2] + head.vs.average.fixed[4], 
+       col = "grey", lwd = 3 , lty = 2)
+legend(10.5, 1.4, legend=c("Female", "Male"),
+       col=c("black", "grey"), lty = c( 1, 2),
+       cex=0.8, box.lty=0, bg="transparent")
+legend(10.90, 1.4, legend=c("", ""),
+       col=c("black", "grey"), pch= c(16, 17),
+       cex=0.8, box.lty=0, bg="transparent")
+
+
+head.vs.average.temp.lm <- lme(Head.Width.mm ~ Elevation + Sex,  
+                               random = ~1|EcoRegion, data = morph.data.temp)
+head.vs.average.temp.interaction.lm <- lme(Head.Width.mm ~ Elevation * Sex,  
+                                           random = ~1|EcoRegion, data = morph.data.temp)
+head.vs.average.temp.interaction.lm <- lme(Wing.Wear ~  previous.summer * Sex + Long + Elevation,  
+                                           random = ~1|EcoRegion, data = morph.data.temp[!is.na(morph.data.temp$Wing.Wear) ,])
+head.vs.average.temp.interaction.lm <- lme(asymmetry ~  previous.summer * Sex,  
+                                           random = ~1|EcoRegion, data = morph.data.temp[!is.na(morph.data.temp$asymmetry) ,])
+plot(head.vs.average.temp.interaction.lm)
+qqnorm(head.vs.average.temp.interaction.lm)
+summary(head.vs.average.temp.interaction.lm)
+r.squared.lme(head.vs.average.temp.interaction.lm)
+lrtest(head.vs.average.temp.lm, head.vs.average.temp.interaction.lm)
+ICtab(head.vs.average.temp.lm, head.vs.average.temp.interaction.lm, weights = TRUE)
+
+#----
+
+
+# Plotting by temperature 
+# BODY SIZE
+head.vs.average.temp.lm <- lme(Head.Width.mm ~ previous.summer + Sex + Long,  
+                              random = ~1|EcoRegion, data = morph.data.temp)
+head.vs.average.temp.interaction.lm <- lme(Head.Width.mm ~ previous.summer * Sex + Long + Elevation,  
+                              random = ~1|EcoRegion, data = morph.data.temp)
+head.vs.average.temp.interaction.lm <- lm(Head.Width.mm ~ previous.summer * Sex + Long + Elevation,  
+                                           #random = ~1|EcoRegion, 
+                                          data = morph.data.temp)
+
+plot(head.vs.average.temp.interaction.lm)
+qqnorm(head.vs.average.temp.interaction.lm)
+summary(head.vs.average.temp.interaction.lm)
+r.squared.lme(head.vs.average.temp.interaction.lm)
+lrtest(head.vs.average.temp.lm, head.vs.average.temp.interaction.lm)
+ICtab(head.vs.average.temp.lm, head.vs.average.temp.interaction.lm, weights = TRUE)
+
+# Creating a object containing the values of the slopes and intercepts for the model
+head.vs.average.fixed <- head.vs.average.temp.interaction.lm[[4]][1]
+head.vs.average.fixed <- head.vs.average.fixed$fixed
+
+#Plotting
+tiff("Temp.vs.Head.Width.tiff", width = 8, height = 5, pointsize = 1/300, units = 'in', res = 300)
+par(mar=c(4.5,5.5, 1,2))
+plot(Head.Width.mm ~ previous.summer, data = morph.data.lat.long[morph.data.lat.long$Sex == "Female", ],
+     ylab = "Head Width (mm)",
+     xlab = "Average Summer Temperature (°C)",
+     ylim = c(min(morph.data.lat.long$Head.Width.mm,  na.rm=T) - 0.1, max(morph.data.lat.long$Head.Width.mm, na.rm=T) + 0.1),
+     cex.lab = 1.5, cex.axis = 0.8, tck = 0.02, pch = 16)
+points(Head.Width.mm ~ previous.summer, data = morph.data.lat.long[morph.data.lat.long$Sex == "Male", ],
+       col = "grey", pch = 17)
+abline(head.vs.average.fixed[1], head.vs.average.fixed[2], col = "black", lwd = 3)
+abline(head.vs.average.fixed[1]  + head.vs.average.fixed[3], head.vs.average.fixed[2] + head.vs.average.fixed[4], 
+       col = "grey", lwd = 3 , lty = 2)
+legend(10.5, 1.4, legend=c("Female", "Male"),
+       col=c("black", "grey"), lty = c( 1, 2),
+       cex=0.8, box.lty=0, bg="transparent")
+legend(10.90, 1.4, legend=c("", ""),
+       col=c("black", "grey"), pch= c(16, 17),
+       cex=0.8, box.lty=0, bg="transparent")
+dev.off()
+
+library(ggplot2)
+windows()
+ggplot(morph.data.temp[morph.data.temp$Sex == "Male", ], aes(previous.summer, Head.Width.mm)) +
+   geom_point(color = "lightgray") + geom_density_2d()
+# Relative Differences in the relationship
+log.head.vs.average.temp.lm <- lme(log(Head.Width.mm) ~ log(previous.summer) + Sex,  
+                               random = ~1|EcoRegion, data = morph.data.temp)
+log.head.vs.average.temp.interaction.lm <- lme(log(Head.Width.mm) ~ log(previous.summer) * Sex,  
+                                           random = ~1|EcoRegion, data = morph.data.temp)
+plot(log.head.vs.average.temp.interaction.lm)
+qqnorm(log.head.vs.average.temp.interaction.lm)
+summary(log.head.vs.average.temp.lm)
+r.squared.lme(log.head.vs.average.temp.lm)
+lrtest(log.head.vs.average.temp.lm, log.head.vs.average.temp.interaction.lm )
+ICtab(log.head.vs.average.temp.lm, log.head.vs.average.temp.interaction.lm , weights = TRUE)
+
+plot(log(Head.Width.mm) ~ log(previous.summer), data = morph.data.lat.long[morph.data.lat.long$Sex == "Female", ],
+     ylab = "Head Width (mm)",
+     xlab = "Average Summer Temperature (C)",
+     ylim = c(min(log(morph.data.lat.long$Head.Width.mm),  na.rm=T) - 0.1, max(log(morph.data.lat.long$Head.Width.mm), na.rm=T) + 0.1),
+     cex.lab = 1.9, cex.axis = 1.75, tck = 0.02, pch = 16)
+points(log(Head.Width.mm) ~ log(previous.summer), data = morph.data.lat.long[morph.data.lat.long$Sex == "Male", ],
+       col = "coral", pch = 17)
+abline(head.vs.average.fixed[1], head.vs.average.fixed[2], col = "grey", lwd = 5)
+abline(head.vs.average.fixed[1]  + head.vs.average.fixed[3], head.vs.average.fixed[2] + head.vs.average.fixed[4], 
+       col = "firebrick", lwd = 5 , lty = 2)
+legend(10.5, 1.4, legend=c("Female", "Male"),
+       col=c("grey", "firebrick"), lty = c( 1, 2),
+       cex=0.8, box.lty=0, bg="transparent")
+legend(10.90, 1.4, legend=c("", ""),
+       col=c("black", "coral"), pch= c(16, 17),
+       cex=0.8, box.lty=0, bg="transparent")
+
+#-----
+
+#-------
+#head.to.wing.vs.average.temp.lm <- lme((Intertegular.Width.mm + Right.Wing.mm) ~ previous.summer *Sex + previous.summer* Right.Wing.mm ,
+#                                       random = list(EcoRegion = ~1), data = morph.data.temp)
+#head.to.wing.vs.average.temp.lm <- lme((Intertegular.Width.mm + Head.Width.mm) ~ previous.summer *Sex + previous.summer*Head.Width.mm,
+#                                       random = list(EcoRegion = ~1), data = morph.data.temp)
+#head.to.wing.vs.average.temp.lm <- lme((Right.Wing.mm + Head.Width.mm) ~ previous.summer *Sex + previous.summer*Right.Wing.mm,
+#                                       random = list(EcoRegion = ~1), data = morph.data.temp)
+
+head.to.wing.vs.average.temp.var.lm <- lme(head.to.intertegular ~ previous.summer + Sex,  weights = varFixed(~Head.Width.mm),
+                                           random = ~1|EcoRegion, data = morph.data.temp)                                                                                                          # ! morph.data.lat.long$Sample %in% c("INO24", "QCO63"), ])
+#head.to.wing.vs.average.temp.interaction.var.lm <- lme(head.to.wing ~ average.temp * Sex,  weights = varFixed(~Head.Width.mm),
+#                                       random = list(EcoRegion = ~1), data = morph.data.remp)
+head.to.wing.vs.average.temp.lm <- lme(head.to.intertegular ~ previous.summer + Sex,  
+                                        random = list(EcoRegion = ~1), data = morph.data.temp)
+#head.to.wing.vs.average.temp.interaction.lm <- lme(head.to.wing ~ previous.summer * Sex, 
+#                                           random = list(EcoRegion = ~1), data = morph.data.temp)
+
+
+morph.data.lat.long.head <- morph.data.lat.long[ ! is.na(morph.data.lat.long$head.to.wing), ]
+morph.data.lat.long.head$residual <- resid(head.to.wing.vs.average.temp.var.lm)
+plot(head.to.wing.vs.average.temp.lm)
+hist(resid(head.to.wing.vs.average.temp.var.lm))
+qqnorm(head.to.wing.vs.average.temp.lm)
+summary(head.to.wing.vs.average.temp.var.lm)
+r.squared.lme(head.to.wing.vs.average.temp.lm)
+lrtest(head.to.wing.vs.average.temp.lm, head.to.wing.vs.average.temp.var.lm)
+ICtab(head.vs.average.temp.lm, #head.vs.average.temp.interaction.lm, 
+      head.to.wing.vs.average.temp.var.lm, #head.to.wing.vs.average.temp.interaction.var.lm ,
+      weights = TRUE)
+plot(Right.Wing.mm ~ Head.Width.mm, data = morph.data.lat.long)
+
+plot(head.to.wing ~ average.temp, data = morph.data.lat.long[morph.data.lat.long$Sex == "Female", ],
+     ylab = "Ratio of Right Wing Length to Head Width",
+     xlab = "Average Temperature (C)",
+     ylim = c(min(morph.data.lat.long$head.to.wing,  na.rm=T) - 0.01, max(morph.data.lat.long$head.to.wing, na.rm=T) + 0.01),
+     cex.lab = 1.9, cex.axis = 1.75, tck = 0.02)
+points(head.to.wing ~ average.temp, data = morph.data.lat.long[morph.data.lat.long$Sex == "Male", ],
+       col = "coral", pch = 2)
+abline(head.to.wing.vs.average.temp.lm[[1]][1], head.to.wing.vs.average.temp.lm[[1]][2], col = "blue", lwd = 3)
+abline(head.to.wing.vs.average.temp.lm[[1]][1]  + head.to.wing.vs.average.temp.lm[[1]][3], head.to.wing.vs.average.temp.lm[[1]][2], 
+       col = "red", lwd = 3 , lty = 2)
+
+plot(average.temp ~ Lat, data = morph.data.lat.long)
+
+average.temp.vs.year <- lm(average.temp ~ Specimen.Year, data = morph.data.lat.long)
+summary(average.temp.vs.year)
+plot(average.temp ~ Specimen.Year, data = morph.data.lat.long,
+     xlab = "Year",
+     ylab = "Average Temperature of Locations Sampled",
+     cex.lab = 1.9, cex.axis = 1.75, tck = 0.02)
+abline(average.temp.vs.year[[1]][1], average.temp.vs.year[[1]][2], col = "black", lwd = 3)
+
+
+wing.wear.average.temp <- gls(Wing.Wear ~ average.temp + Sex, data = morph.data.lat.long)
+summary(wing.wear.average.temp)
+plot(wing.wear.average.temp)
+plot(Wing.Wear ~ Specimen.Year, data = morph.data.lat.long[morph.data.lat.long$Sex == "Female", ],
+     ylab = "Wing Wear",
+     xlab = "Year",
+     ylim = c(0, 5),
+     cex.lab = 1.9, cex.axis = 1.75, tck = 0.02)
+points(Wing.Wear ~ Specimen.Year, data = morph.data.lat.long[morph.data.lat.long$Sex == "Male", ],
+       col = "coral", pch = 2)
+
+
+morph.data.lat.long$Month <- factor(morph.data.lat.long$Month, levels = c("March",
+                                "April", "May", "June", "July", "August", "September", 
+                                "October", "November"))
+
+boxplot(Wing.Wear ~ Month, data = morph.data.lat.long[!morph.data.lat.long$Month == "" &
+                                                              morph.data.lat.long$Sex == "Male", ], order())
+
+boxplot(Wing.Wear ~ Month, data = morph.data.lat.long[!morph.data.lat.long$Month == "" &
+                                                              morph.data.lat.long$Sex == "Female", ], order())
 
 
 
-
-plot(Intertegular.Width.mm ~ Specimen.Year, data = morph.data,  cex = 2, cex.lab = 2, cex.axis = 2)
-abline(99.878820, -0.020805, col = "blue")
-summary(lm(Intertegular.Width.mm ~ Specimen.Year + Sex, data = morph.data))
-
-
-plot(Head.Width.mm ~ Intertegular.Width.mm, subset(morph.data,morph.data$Sex == "Female"))
-summary(lm(Head.Width.mm ~ Intertegular.Width.mm * Specimen.Year + Sex, morph.data))
-points(Head.Width.mm ~ Intertegular.Width.mm, subset(morph.data, morph.data$Specimen.Year < 1960), col = "red")
-points(Head.Width.mm ~ Intertegular.Width.mm, subset(morph.data, morph.data$Specimen.Year > 1990), col = "blue")
-
-morph.data[ morph.data$Head.Width.mm > 2.1 & morph.data$Intertegular.Width.mm<1.4,]
+boxplot(Wing.Wear ~ Month, data = morph.data.lat.long[!morph.data.lat.long$Month == "" &
+                                                              morph.data.lat.long$Sex == "Female" &
+                                                              morph.data.lat.long$average.temp > 12.73, ], order())
+boxplot(Wing.Wear ~ Month, data = morph.data.lat.long[!morph.data.lat.long$Month == "" &
+                                                              morph.data.lat.long$Sex == "Female" &
+                                                              morph.data.lat.long$average.temp < 8.02, ], order())
 
 
-plot(Right.Wing.mm ~ Specimen.Year, data = morph.data, cex = 2, cex.lab = 2, cex.axis = 2)
-summary(lm(Right.Wing.mm ~ Specimen.Year + Sex, data = morph.data))
-abline(166.920104, -0.04, col = "blue")
+head.vs.average.temp.lm <- lm(log(Head.Width.mm) ~ log(Intertegular.Width.mm) * log(average.temp), data = morph.data.lat.long[morph.data.lat.long$Sex == "Male", ])
+summary(head.vs.average.temp.lm)
 
+head.vs.average.temp.lm <- lm(log(Right.Wing.mm) ~ log(Intertegular.Width.mm) * log(average.temp), data = morph.data.lat.long[morph.data.lat.long$Sex == "Male", ])
+summary(head.vs.average.temp.lm)
 
-plot(wing.to.intertegular ~ Specimen.Year, data = morph.data, cex = 2, cex.lab = 2, cex.axis = 2)
-summary(lm(wing.to.intertegular ~ Specimen.Year + Sex, data = morph.data))
-abline(166.920104, -0.04, col = "blue")
-
-
-plot(Left.Wing.Costal.Vein.Length ~ Specimen.Year, data = morph.data)
-plot(Wing.Wear ~ Specimen.Year, data = morph.data)
-plot(head.to.wing ~ Specimen.Year, data = morph.data)
-plot(head.to.intertegular ~ Specimen.Year, data = morph.data)
-summary(lm(head.to.intertegular ~ Specimen.Year + Sex, data = morph.data))
-plot(asymmetry ~ Specimen.Year, data = morph.data, cex = 2, cex.lab = 2, cex.axis = 2)
-summary(lm(asymmetry ~ Specimen.Year, data = morph.data))
-
-morph.data.rw <- subset(morph.data, !is.na(morph.data$Right.Wing.Costal.Vein.Length))
-
-
-
-hist(morph.data[,"Wing.Wear"])
-plot(Left.Wing.Costal.Vein.Length ~ Right.Wing.Costal.Vein.Length, data = morph.data)
-
-
-
-morph.data[morph.data$Head.Width < 50,]
-morph.data[morph.data$Intertegular.Width < 40,]
-morph.data[morph.data$Intertegular.Width > 72,]
-
-morph.data[morph.data$head.to.wing > 1,]
-morph.data[morph.data$head.to.intertegular < 1.2,]
-
-morph.data[morph.data$asymmetry > 8,]
-
-#>> Export the Data File to Import into GIS for temperature Data
-write.csv(morph.data, "C:/Users/evank/OneDrive/Desktop/morph.data.2.21.20.csv")
-
-
-#--------------------------------------------
-# Scratch for just current specimens
-#--------------------------------------------
-
-morph.data <- subset(morph.data, ! morph.data$Site == "")
-morph.data <- subset(morph.data, ! morph.data$Site == "Knener/Grixiti")
-morph.data <- subset(morph.data, morph.data$Sex != "Male")
-
-centroid.temp <- read.csv("C:/Users/evank/OneDrive/Desktop/centroids.csv")
-centroid.temp <- read.csv("C:/Users/evank/OneDrive/Desktop/centroids_2017_average.csv")
-
-
-morph.data$temp <-0
-morph.data$Site <- as.character(morph.data$Site)
-
-apply(morph.data["Site"], MARGIN = 1, function(loc) {
-  morph.data$Lat <<- ifelse(morph.data$Site == loc, 
-                            centroid.temp[centroid.temp$State_Prov == loc, "Lat"],
-                            morph.data$Lat)
-  morph.data$Long <<- ifelse(morph.data$Site == loc, 
-                             centroid.temp[centroid.temp$State_Prov == loc, "Long"],
-                             morph.data$Long)
-  morph.data$temp <<- ifelse(morph.data$Site == loc, 
-                             centroid.temp[centroid.temp$State_Prov == loc, "RASTERVALU"],
-                             morph.data$temp)
-})
-
-
-plot(Head.Width ~ temp, data = morph.data,  cex = 2, cex.lab = 2, cex.axis = 2)
-abline(99.878820, -0.020805, col = "blue")
-summary(lm(Head.Width ~ temp, data = morph.data))
-
-
-
-plot(Intertegular.Width ~ temp, data = morph.data,  cex = 2, cex.lab = 2, cex.axis = 2)
-abline(99.878820, -0.020805, col = "blue")
-summary(lm(Intertegular.Width ~ temp, data = morph.data))
-
-
-plot(Right.Wing.Costal.Vein.Length ~ temp, data = morph.data, cex = 2, cex.lab = 2, cex.axis = 2)
-summary(lm(Right.Wing.Costal.Vein.Length ~ temp, data = morph.data))
-abline(166.920104, -0.04, col = "blue")
-
-plot(Left.Wing.Costal.Vein.Length ~ temp, data = morph.data)
-plot(as.numeric(Wing.Wear) ~ temp, data = morph.data)
-plot(head.to.wing ~ temp, data = morph.data)
-plot(head.to.intertegular ~ temp, data = morph.data)
-plot(asymmetry ~ temp, data = morph.data, cex = 2, cex.lab = 2, cex.axis = 2)
-
-
-morph.data[morph.data$head.to.wing >1,]
-
-
-
-
-
-
-centroid.temp == -9999
-
-
-centroid.temp <- read.csv("C:/Users/evank/OneDrive/Desktop/morph_2017_average.csv")
-centroid.temp$Head_Width <- ifelse(centroid.temp$Head_Width == -9999, NA, centroid.temp$Head_Width)
-centroid.temp$Intertegul <- ifelse(centroid.temp$Intertegul == -9999, NA, centroid.temp$Intertegul)
-centroid.temp$Right_Wing <- ifelse(centroid.temp$Right_Wing == -9999, NA, centroid.temp$Right_Wing)
-centroid.temp <- subset(centroid.temp, centroid.temp$Species == "calcarata")
-centroid.temp.female <- subset(centroid.temp, centroid.temp$Sex != "Male")
-
-
-plot(Head_Width ~ RASTERVALU, data = centroid.temp.female,  cex = 2, cex.lab = 2, cex.axis = 2,
-     pch = 16,  tck = 0.02)
-abline(71.3614, 0.147, col = "blue")
-summary(lm(Head_Width ~ RASTERVALU, data = centroid.temp.female))
-
-
-plot(Intertegul ~ RASTERVALU, data = centroid.temp.female,  cex = 2, cex.lab = 2, cex.axis = 2,
-     pch = 16, tck = 0.02)
-abline(53.6354, 0.3732, col = "blue")
-summary(lm(Intertegul ~ RASTERVALU, data = centroid.temp.female))
-
-plot(Right_Wing ~ RASTERVALU, data = centroid.temp.female,  cex = 2, cex.lab = 2, cex.axis = 2,
-     pch = 16, tck = 0.02)
-abline(53.6354, 0.3732, col = "blue")
-summary(lm(Right_Wing ~ RASTERVALU, data = centroid.temp.female))
-
-centroid.temp.female$asymmetry <- abs(centroid.temp.female$Right_Wing - 
-                                        centroid.temp.female$Left_Wing_)
-
-plot(asymmetry ~ RASTERVALU, data = centroid.temp.female,  cex = 2, cex.lab = 2, cex.axis = 2,
-     pch = 16, tck = 0.02)
-summary(lm(asymmetry ~ RASTERVALU, data = centroid.temp.female))
+head.vs.average.temp.lm <- lm(log(Head.Width.mm) ~ log(Right.Wing.mm) * log(average.temp), data = morph.data.lat.long[morph.data.lat.long$Sex == "Male", ])
+summary(head.vs.average.temp.lm)
