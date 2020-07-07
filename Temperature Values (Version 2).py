@@ -10,6 +10,9 @@ env.workspace = "C:/Users/evank/Documents/ArcGIS/Projects/Temperature (that open
 # Check out the ArcGIS Spatial Analyst extension license
 arcpy.CheckOutExtension("Spatial")
 
+
+
+
 # LOADS RASTERS For each month and year
 month = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
 year = ["2016", "2017"]
@@ -36,7 +39,9 @@ for year_number in year:
                                    "NO_VERTICAL")
     # Load in points for that year
     import pandas as pd
-    location_df = pd.read_csv("C:/Users/evank/Documents/ArcGIS/Projects/Temperature (that opens)/samples.summary.csv")
+    # location_df = pd.read_csv("C:/Users/evank/Documents/ArcGIS/Projects/Temperature (that opens)/samples.summary.csv")
+    location_df = pd.read_csv("C:/Users/evank/Documents/ArcGIS/Projects/Temperature/morphdata4720.csv",
+                              encoding="ISO-8859-1")
     temp = location_df[location_df['Year'] == int(year_number)]
     temp.to_csv("C:/Users/evank/Documents/ArcGIS/Projects/Temperature (that opens)/temp.csv", index=False)
     in_point_features = (r"C:\Users\evank\Documents\ArcGIS\Projects\Temperature (that opens)\Temperature (that opens).gdb\Specimen_Location_" + str(year_number))
