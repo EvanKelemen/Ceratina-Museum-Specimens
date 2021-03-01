@@ -19,6 +19,7 @@ name_replace <- function(remove_char, replace_with){
 morph.data$Sample <- name_replace("[.]", "_")
 morph.data$Sample <- name_replace("-", "_")
 morph.data$Sample <- name_replace(" ", "_")
+morph.data$Sample <- name_replace(" ", "_")
 
 #Check for duplicate names
 #duplicate.names <- unlist(apply(morph.data[ "Sample"], MARGIN = 1, function(sample.name){
