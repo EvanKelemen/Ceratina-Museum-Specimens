@@ -1,0 +1,1 @@
+This repository describes the workflow used to analyze morphological changes in the small carpenter bee over the past 118 years. Methods are described in the manuscript "Opposing pressures of climate and land‐use change on a native bee" (Kelemen and Rehan 2021).
