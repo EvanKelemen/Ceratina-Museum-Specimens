@@ -2,44 +2,27 @@
 # Combine Land Use Data and Morphological Data
 #-------------------------------------------------------------------------------
 # Makes data.frame morph.data
-source("C:/Users/evank/OneDrive/Desktop/Maps/Ceratina-Maps/morphologicaldata.R")
+source("./morphologicaldata.R")
 # Creates the function to combine temperature data to morphological data
-source("C:/Users/evank/OneDrive/Desktop/Maps/Ceratina-Maps/Combining.temperature.data.R")
+source("./Combining.temperature.data.R")
 source("C:/Users/evank/Documents/R/General Scripts/Rsquared.R")
 
-
+#Double check that only sample with geographic locations are included
 morph.data.lat.long <- subset(morph.data, !is.na(morph.data$Lat))
-
-#average.temp <- combining.temperature.data("Yearly Average", morph.data.lat.long)
-#average.precip <- combining.temperature.data("Yearly Precip Average", morph.data.lat.long)
-
-# Using UDEL data
-#morph.data.lat.long$average.temp <- average.temp
-# Remove any point not on a raster (Holly Shelter NC 1951 temp = 16.80833, precip = 7.976666)
-#morph.data.lat.long <- subset(morph.data.lat.long, morph.data.lat.long$average.temp > -100 )
-#morph.data.lat.long <- subset(morph.data.lat.long, morph.data.lat.long$Specimen.Year < 2018)
 
 # Using the Climate Research Unit (university of east anglia)
 # have to turn cell identity for Specimen Location 2018 and 2019 because it adds a leading zero
-average.temp <- combining.temperature.data.cru("Yearly Average", morph.data.lat.long)
-average.precip <- combining.temperature.data.cru("Yearly Precip Average", morph.data.lat.long)
-average.dtr <- combining.temperature.data.cru("DTR", morph.data.lat.long)
-frost.frequency <- combining.temperature.data.cru("FRS", morph.data.lat.long)
-wet.frequency <- combining.temperature.data.cru("WET", morph.data.lat.long)
-previous.summer <- combining.temperature.data.cru("Previous Summer", morph.data.lat.long)
-previous.precip <- combining.temperature.data.cru("Previous Precip", morph.data.lat.long)
-
-morph.data.lat.long$average.temp <- average.temp
-morph.data.lat.long$average.precip <- average.precip
-morph.data.lat.long$average.dtr <- average.dtr
-morph.data.lat.long$frost.frequency <- frost.frequency
-morph.data.lat.long$wet.frequency <- wet.frequency
-morph.data.lat.long$previous.summer <- previous.summer
-morph.data.lat.long$previous.precip <- previous.precip
+morph.data.lat.long$average.temp <- combining.temperature.data.cru("Yearly Average", morph.data.lat.long)
+morph.data.lat.long$average.precip <- combining.temperature.data.cru("Yearly Precip Average", morph.data.lat.long)
+morph.data.lat.long$average.dtr <- combining.temperature.data.cru("DTR", morph.data.lat.long)
+morph.data.lat.long$frost.frequency <- combining.temperature.data.cru("FRS", morph.data.lat.long)
+morph.data.lat.long$wet.frequency <- combining.temperature.data.cru("WET", morph.data.lat.long)
+morph.data.lat.long$previous.summer <- combining.temperature.data.cru("Previous Summer", morph.data.lat.long)
+morph.data.lat.long$previous.precip <- combining.temperature.data.cru("Previous Precip", morph.data.lat.long)
 
 morph.data.lat.long <- subset(morph.data.lat.long, morph.data.lat.long$Specimen.Year > 1901)
 
-# Preserves a version of Lat.Long for temeprature analysis
+# Preserves a version of Lat.Long for temperature analysis
 morph.data.temp <- morph.data.lat.long
 
 # To determine the agricultural landscape during development
@@ -78,59 +61,23 @@ morph.data.2012.beyond <- subset(morph.data.lat.long, morph.data.lat.long$Specim
 morph.data.2012.beyond$Decade <- 2012
 
 
+#Write the data to use in ARCGIS (need to remove duplicate locations)
+#excess_specimens <- function(decade_data){
+#  unlist(apply(unique(decade_data["Location.State"]), MARGIN = 1, function(loc.s.y){
+#    temp <- decade_data[ decade_data$Location.State == loc.s.y, ]
+#    if(nrow(temp) > 2) {
+#      temp[2:nrow(temp), "Fate"] <- "Remove"
+#      temp[temp$Fate == "Remove", "Sample"]
+#    } else{}
+#  }))
+#}
 
-#excess.specimens <- unlist(apply(unique(morph.data.1974.1981["Location.State"]), MARGIN = 1, function(loc.s.y){
-#  temp <- morph.data.1974.1981[ morph.data.1974.1981$Location.State == loc.s.y, ]
-#  if(nrow(temp) > 2) {
-#    temp[2:nrow(temp), "Fate"] <- "Remove"
-#    temp[temp$Fate == "Remove", "Sample"]
-#  } else{}
-#}))
-#morph.data.1974 <- subset(morph.data.1974.1981,! morph.data.1974.1981$Sample %in% excess.specimens)
+#for (time_slice in c(morph.data.1974.1981, morph.data.1982.1991, morph.data.1992.2001, 
+#                    morph.data.2002.2011, morph.data.2012.beyond)){
+#  temp <- subset(time_slice,! time_slice$Sample %in% excess_specimens(time_slice))
+#  write.csv(temp, paste0("C:/Users/evank/OneDrive/Desktop/morphdata", time_slice$Decade[1], ".csv"))
+#}
 
-#excess.specimens <- unlist(apply(unique(morph.data.1982.1991["Location.State"]), MARGIN = 1, function(loc.s.y){
-#  temp <- morph.data.1982.1991[ morph.data.1982.1991$Location.State == loc.s.y, ]
-#  if(nrow(temp) > 2) {
-#    temp[2:nrow(temp), "Fate"] <- "Remove"
-#    temp[temp$Fate == "Remove", "Sample"]
-#  } else{}
-#}))
-#morph.data.1982 <- subset(morph.data.1982.1991,! morph.data.1982.1991$Sample %in% excess.specimens)
-
-#excess.specimens <- unlist(apply(unique(morph.data.1992.2001["Location.State"]), MARGIN = 1, function(loc.s.y){
-# temp <- morph.data.1992.2001[ morph.data.1992.2001$Location.State == loc.s.y, ]
-#  if(nrow(temp) > 2) {
-#    temp[2:nrow(temp), "Fate"] <- "Remove"
-#    temp[temp$Fate == "Remove", "Sample"]
-#  } else{}
-#}))
-#morph.data.1992 <- subset(morph.data.1992.2001,! morph.data.1992.2001$Sample %in% excess.specimens)
-
-#excess.specimens <- unlist(apply(unique(morph.data.2002.2011["Location.State"]), MARGIN = 1, function(loc.s.y){
-#  temp <- morph.data.2002.2011[ morph.data.2002.2011$Location.State == loc.s.y, ]
-#  if(nrow(temp) > 2) {
-#    temp[2:nrow(temp), "Fate"] <- "Remove"
-#    temp[temp$Fate == "Remove", "Sample"]
-#  } else{}
-#}))
-#morph.data.2002 <- subset(morph.data.2002.2011,! morph.data.2002.2011$Sample %in% excess.specimens)
-
-#excess.specimens <- unlist(apply(unique(morph.data.2012.beyond["Location.State"]), MARGIN = 1, function(loc.s.y){
-#  temp <- morph.data.2012.beyond[ morph.data.2012.beyond$Location.State == loc.s.y, ]
-#  if(nrow(temp) > 2) {
-#    temp[2:nrow(temp), "Fate"] <- "Remove"
-#    temp[temp$Fate == "Remove", "Sample"]
-#  } else{}
-#}))
-#morph.data.2012 <- subset(morph.data.2012.beyond,! morph.data.2012.beyond$Sample %in% excess.specimens)
-
-
-#Write the data to use in ARCGIS
-#write.csv(morph.data.1974, "C:/Users/evank/OneDrive/Desktop/morph.data.previous1974.csv")
-#write.csv(morph.data.1982, "C:/Users/evank/OneDrive/Desktop/morph.data.previous1982.csv")
-#write.csv(morph.data.1992, "C:/Users/evank/OneDrive/Desktop/morph.data.previous1992.csv")
-#write.csv(morph.data.2002, "C:/Users/evank/OneDrive/Desktop/morph.data.previous2002.csv")
-#write.csv(morph.data.2012, "C:/Users/evank/OneDrive/Desktop/morph.data.previous2012.csv")
 
 # Combine the data into on data.frame
 morph.data.land.use <- rbind(morph.data.1974.1981, morph.data.1982.1991, 
@@ -158,38 +105,11 @@ morph.data.2010.2019.ca <- subset(morph.data.lat.long, morph.data.lat.long$Speci
 morph.data.2010.2019.ca$Decade <- 2010
 
 
+#for (time_slice in c(morph.data.1990.1999.ca, morph.data.2000.2009.ca, morph.data.2010.2019.ca)){
+#  temp <- subset(time_slice,! time_slice$Sample %in% excess_specimens(time_slice))
+#  write.csv(temp, paste0("C:/Users/evank/OneDrive/Desktop/morphdata", time_slice$Decade[1], ".csv"))
+#}
 
-#excess.specimens <- unlist(apply(unique(morph.data.2000.2009.ca["Location.State"]), MARGIN = 1, function(loc.s.y){
-#  temp <- morph.data.2000.2009.ca[ morph.data.2000.2009.ca$Location.State == loc.s.y, ]
-#  if(nrow(temp) > 2) {
-#    temp[2:nrow(temp), "Fate"] <- "Remove"
-#    temp[temp$Fate == "Remove", "Sample"]
-#  } else{}
-#}))
-#morph.data.2000 <- subset(morph.data.2000.2009.ca,! morph.data.2000.2009.ca$Sample %in% excess.specimens)
-
-#excess.specimens <- unlist(apply(unique(morph.data.1990.1999.ca["Location.State"]), MARGIN = 1, function(loc.s.y){
-#  temp <- morph.data.1990.1999.ca[ morph.data.1990.1999.ca$Location.State == loc.s.y, ]
-#  if(nrow(temp) > 2) {
-#    temp[2:nrow(temp), "Fate"] <- "Remove"
-#    temp[temp$Fate == "Remove", "Sample"]
-#  } else{}
-#}))
-#morph.data.1990 <- subset(morph.data.1990.1999.ca,! morph.data.1990.1999.ca$Sample %in% excess.specimens)
-
-#excess.specimens <- unlist(apply(unique(morph.data.2010.2019.ca["Location.State"]), MARGIN = 1, function(loc.s.y){
-#  temp <- morph.data.2010.2019.ca[ morph.data.2010.2019.ca$Location.State == loc.s.y, ]
-#  if(nrow(temp) > 2) {
-#    temp[2:nrow(temp), "Fate"] <- "Remove"
-#    temp[temp$Fate == "Remove", "Sample"]
-#  } else{}
-#}))
-#morph.data.2010 <- subset(morph.data.2010.2019.ca,! morph.data.2010.2019.ca$Sample %in% excess.specimens)
-
-# Write the Data for ARCGIS
-#write.csv(morph.data.1990, "C:/Users/evank/OneDrive/Desktop/morph.data.previous1990.csv")
-#write.csv(morph.data.2000, "C:/Users/evank/OneDrive/Desktop/morph.data.previous2000.csv")
-#write.csv(morph.data.2010, "C:/Users/evank/OneDrive/Desktop/morph.data.previous2010.csv")
 
 # Combine the data into one dataframe
 morph.data.land.use.ca <- rbind(morph.data.1990.1999.ca, morph.data.2000.2009.ca,
@@ -198,49 +118,7 @@ morph.data.land.use.ca <- rbind(morph.data.1990.1999.ca, morph.data.2000.2009.ca
 rm(morph.data.1990.1999.ca, morph.data.2000.2009.ca, morph.data.2010.2019.ca)
 
 
-
-
-
-
-# Function to combine data if land use of a single point (not a buffer)
-#----
-#combining.landuse.data <- function(variable.folder){
-#  temp.files <- list.files(path = paste0("C:/Users/evank/Documents/ArcGIS/Projects/Temperature/Land Use Specimens/",
-#                                         variable.folder), pattern = "*.csv")
-#  temp <- do.call(rbind, lapply(temp.files, function(file.name){
-#    read.csv(paste0("C:/Users/evank/Documents/ArcGIS/Projects/Temperature/Land Use Specimens/",
-#                    variable.folder,"/", file.name))
-#  }))
-#  land.use.temp <- data.frame(value =
-#  c(11, 12, 21, 22, 23, 24, 25, 26, 27, 31, 32, 33, 41, 42, 43, 44, 45, 50, 60),
-#  use.type = 
-#  c("Water", "Wetlands", "Developed, Major Transportation", "Developed, Commercial/Services", 
-#    "Developed, Industrial/Military", "Developed, Recreation", "Developed, Residential, High Density",
-#    "Developed, Residential, Low-Medium Density", "Developed, Other", "Semi-Developed, Urban Interface High",
-#    "Semi-Developed, Urban Interface Low-Medium", "Semi-Developed Anthropogenic Other", 
-#    "Production, Mining/Extraction", "Production, Timber/Forest cutting", "Production, Crops",
-#    "Production, Pasture/Hay", "Production, Grazing Potential", "Low Use", "Very Low Use, Conservation"),
-#  use.type.simplified = 
-#    c("Wetlands", "Wetlands", "Developed", "Developed", 
-#      "Developed", "Developed", "Developed",
-#      "Developed", "Developed", "Semi-Developed",
-#      "Semi-Developed", "Semi-Developed", 
-#      "Production, Mining/Extraction", "Production, Timber/Forest cutting", "Production",
-#      "Production", "Production", "Low Use", "Very Low Use, Conservation"))
-  
-  
-#  temp$land.use <- unlist(sapply(temp[, "Sample"], function(sample.name){
-#    land.use.temp[land.use.temp$value == temp[ temp$Sample == as.character(sample.name), "RASTERVALU"], "use.type.simplified"]
-#  }))
-#  
-#  temp
-#}
-#----
-
-
-
-# Combining US Data
-
+#>>> Combining US Data
 # Load in Data
 us.land.use.data <- read.csv("C:/Users/evank/Documents/ArcGIS/Projects/Temperature/Land Use Specimens/Points_DecadeAfter/Output/500meterprevious/US/combined_permenant.csv")
 us.land.use.data <- us.land.use.data[3:length(us.land.use.data)]
@@ -278,15 +156,9 @@ us.land.use.data$sum <- us.land.use.data[, 3] +  us.land.use.data[,4] + us.land.
   us.land.use.data[,14] + us.land.use.data[,15] +  us.land.use.data[,16] + us.land.use.data[,17] +
   us.land.use.data[,18] + us.land.use.data[,19] + us.land.use.data[,20] 
 
-
-us.land.use.data$Agriculture <- ((#us.land.use.data[,15]  +
-                                    us.land.use.data[,16])/ #+ 
-                                    #us.land.use.data[,17]) /# + us.land.use.data[,18])/
-                                   us.land.use.data$sum) * 100
-
-us.land.use.data$Agriculture_raw <- (#us.land.use.data[,15] +  
-                                       us.land.use.data[,16])# + 
-                                   # us.land.use.data[,17]) # + us.land.use.data[,18])
+# Calculate Land Use
+us.land.use.data$Agriculture <- ((us.land.use.data[,16])/ us.land.use.data$sum) * 100
+us.land.use.data$Agriculture_raw <- (us.land.use.data[,16])
 
 us.land.use.data$Development <- ((us.land.use.data[, 5] +  us.land.use.data[,6] + us.land.use.data[,7] +  
                         us.land.use.data[,8] + us.land.use.data[,9] +  us.land.use.data[,10] + us.land.use.data[,11] 
@@ -296,57 +168,42 @@ us.land.use.data$Development_raw <- (us.land.use.data[, 5] +  us.land.use.data[,
                                     us.land.use.data[,8] + us.land.use.data[,9] +  us.land.use.data[,10] + us.land.use.data[,11]
                                     + us.land.use.data[,12] + us.land.use.data[,13] + us.land.use.data[,14]) 
 
-# When we remove NA measurement, lost connecting sample to add lat and long
+# When we remove NA measurement from morph.data, lost connecting sample to add lat and long
 us.land.use.data$Sample <- as.character(us.land.use.data$Sample)
 us.land.use.data[ us.land.use.data$Sample == "SEM01211279", "Sample"] <- "SEM01211324"
 us.land.use.data[ us.land.use.data$Sample == "FSCA00091292", "Sample"] <- "FSCA00091291"
 
 # Add lat and long to the data to link the two dataframe
-us.land.use.data$Lat <- unlist(sapply(us.land.use.data[, "Sample"], function(sample.name){
-  #Had to add due to some samples containing NA measurements removed from morph.data
-  if (length(which(morph.data.land.use$Sample == sample.name)) == 0){
-    NA
-  } else{ morph.data.land.use[morph.data.land.use$Sample == sample.name, "Lat"]}
-}))
-us.land.use.data$Long <- unlist(sapply(us.land.use.data[, "Sample"], function(sample.name){
-  if (length(which(morph.data.land.use$Sample == sample.name)) == 0){
-    NA
-  } else{ morph.data.land.use[morph.data.land.use$Sample == sample.name, "Long"]}
-#  if (length(which(morph.data.land.use$Sample == sample.name)) == 0) {
-#    as.character(sample.name)
-#  } else{}
-}))
+for (lat_or_long in c("Lat", "Long")){
+  us.land.use.data$Lat <- unlist(sapply(us.land.use.data[, "Sample"], function(sample.name){
+    #Had to add due to some samples containing NA measurements removed from morph.data
+    if (length(which(morph.data.land.use$Sample == sample.name)) == 0){
+      NA
+    } else{ morph.data.land.use[morph.data.land.use$Sample == sample.name, lat_or_long]}
+  }))
+}
+
+# Unique Identifier for each buffer
 us.land.use.data$Lat.Long.Decade <- paste0(us.land.use.data$Lat, us.land.use.data$Long, us.land.use.data$Decade)
-
 morph.data.land.use$Lat.Long.Decade <- paste0(morph.data.land.use$Lat, morph.data.land.use$Long, morph.data.land.use$Decade)
-
-
-morph.data.land.use$Development <- unlist(sapply(morph.data.land.use[, "Sample"], function(sample.name){
-  us.land.use.data[us.land.use.data$Lat.Long.Decade == morph.data.land.use[morph.data.land.use$Sample == sample.name, "Lat.Long.Decade"], "Development"][1] 
-}))
-morph.data.land.use$Development_raw <- unlist(sapply(morph.data.land.use[, "Sample"], function(sample.name){
-  us.land.use.data[us.land.use.data$Lat.Long.Decade == morph.data.land.use[morph.data.land.use$Sample == sample.name, "Lat.Long.Decade"], "Development_raw"][1] 
-}))
-
-morph.data.land.use$Agriculture <- unlist(sapply(morph.data.land.use[, "Sample"], function(sample.name){
-  us.land.use.data[us.land.use.data$Lat.Long.Decade == morph.data.land.use[morph.data.land.use$Sample == sample.name, "Lat.Long.Decade"], "Agriculture"][1] 
-}))
-morph.data.land.use$Agriculture_raw <- unlist(sapply(morph.data.land.use[, "Sample"], function(sample.name){
-  us.land.use.data[us.land.use.data$Lat.Long.Decade == morph.data.land.use[morph.data.land.use$Sample == sample.name, "Lat.Long.Decade"], "Agriculture_raw"][1] 
-}))
+# Link land data to morph data
+for (land_use in c("Development", "Development_raw", "Agriculture", "Agriculture_raw")){
+  morph.data.land.use[land_use] <- unlist(sapply(morph.data.land.use[, "Sample"], function(sample.name){
+    us.land.use.data[us.land.use.data$Lat.Long.Decade == morph.data.land.use[morph.data.land.use$Sample == sample.name, "Lat.Long.Decade"], land_use][1] 
+  }))
+}
 
 rm(us.land.use.data, land.use.temp)
 
 
-# Combining Canada Data
 
+#>> Combining Canada Data
 ca.land.use.data <- read.csv("C:/Users/evank/Documents/ArcGIS/Projects/Temperature/Land Use Specimens/Points_DecadeAfter/Output/500meterprevious/Canada/combined_permenant.csv")
 ca.land.use.data <- ca.land.use.data[3:length(ca.land.use.data)]
 ca.land.use.data[is.na(ca.land.use.data)] <- 0
 
 
-land.use.ca.temp <- data.frame(value =
-                                    c(#11, 
+land.use.ca.temp <- data.frame(value =c(#11, 
                                       21, 25, 31, 41, 42, 45, 46, 51, #61,62, 
                                       71, 73, #74, 
                                       91), 
@@ -377,30 +234,22 @@ ca.land.use.data$Agriculture_raw <- (ca.land.use.data[,10])
 ca.land.use.data$Development <- ((ca.land.use.data[, 3] +  ca.land.use.data[,4]) /ca.land.use.data$sum) * 100
 ca.land.use.data$Development_raw <- (ca.land.use.data[, 3] +  ca.land.use.data[,4])
 
-ca.land.use.data$Lat <- unlist(sapply(ca.land.use.data[, "Sample"], function(sample.name){
-  morph.data.land.use.ca[morph.data.land.use.ca$Sample == sample.name, "Lat"] 
-}))
-ca.land.use.data$Long <- unlist(sapply(ca.land.use.data[, "Sample"], function(sample.name){
-  morph.data.land.use.ca[morph.data.land.use.ca$Sample == sample.name, "Long"] 
-}))
+
+for (lat_or_long in c("Lat", "Long")){
+  ca.land.use.data$Lat <- unlist(sapply(ca.land.use.data[, "Sample"], function(sample.name){
+    morph.data.land.use.ca[morph.data.land.use.ca$Sample == sample.name, lat_or_long] 
+  }))
+}
+
+# Unique Identifier for each buffer
 ca.land.use.data$Lat.Long.Decade <- paste0(ca.land.use.data$Lat, ca.land.use.data$Long, ca.land.use.data$Decade)
-
 morph.data.land.use.ca$Lat.Long.Decade <- paste0(morph.data.land.use.ca$Lat, morph.data.land.use.ca$Long, morph.data.land.use.ca$Decade)
-
-
-morph.data.land.use.ca$Development <- unlist(sapply(morph.data.land.use.ca[, "Sample"], function(sample.name){
-  ca.land.use.data[ca.land.use.data$Lat.Long.Decade == morph.data.land.use.ca[morph.data.land.use.ca$Sample == sample.name, "Lat.Long.Decade"], "Development"][1] 
-}))
-morph.data.land.use.ca$Development_raw <- unlist(sapply(morph.data.land.use.ca[, "Sample"], function(sample.name){
-  ca.land.use.data[ca.land.use.data$Lat.Long.Decade == morph.data.land.use.ca[morph.data.land.use.ca$Sample == sample.name, "Lat.Long.Decade"], "Development_raw"][1] 
-}))
-
-morph.data.land.use.ca$Agriculture <- unlist(sapply(morph.data.land.use.ca[, "Sample"], function(sample.name){
-  ca.land.use.data[ca.land.use.data$Lat.Long.Decade == morph.data.land.use.ca[morph.data.land.use.ca$Sample == sample.name, "Lat.Long.Decade"], "Agriculture"][1] 
-}))
-morph.data.land.use.ca$Agriculture_raw <- unlist(sapply(morph.data.land.use.ca[, "Sample"], function(sample.name){
-  ca.land.use.data[ca.land.use.data$Lat.Long.Decade == morph.data.land.use.ca[morph.data.land.use.ca$Sample == sample.name, "Lat.Long.Decade"], "Agriculture_raw"][1] 
-}))
+# Link land data to morph data
+for (land_use in c("Development", "Development_raw", "Agriculture", "Agriculture_raw")){
+  morph.data.land.use.ca[ land_use] <- unlist(sapply(morph.data.land.use.ca[, "Sample"], function(sample.name){
+    ca.land.use.data[ca.land.use.data$Lat.Long.Decade == morph.data.land.use.ca[morph.data.land.use.ca$Sample == sample.name, "Lat.Long.Decade"], land_use][1] 
+  }))
+}
 
 rm(ca.land.use.data,land.use.ca.temp)
 
