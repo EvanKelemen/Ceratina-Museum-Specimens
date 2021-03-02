@@ -11,7 +11,7 @@ import numpy
 env.workspace = "C:/Users/evank/Documents/ArcGIS/Projects/Temperature"
 
 
-def climate_variables(month, year, clim_var, locations, workspace):
+def climate_variables(month, year, clim_var, locations, workspace, output_folder):
     """Calculates the climate variable at each specimen's location for a given time period"""
     for year_number in year:
         for month_number in month:
@@ -24,8 +24,8 @@ def climate_variables(month, year, clim_var, locations, workspace):
         # Execute Times
         ave_var = (Raster(inRaster[0]) + Raster(inRaster[1]) + Raster(inRaster[2])) / 3
         # Save the output
-        arcpy.management.ProjectRaster(ave_var, workspace + "/Temperature Variable CRU/"\
-                                       + str(clim_var) + "/" + str(clim_var) + str(year_number) + ".tif",
+        arcpy.management.ProjectRaster(ave_var,
+                                       output_folder + str(clim_var) + "/" + str(clim_var) + str(year_number) + ".tif",
                                        "GEOGCS['GCS_WGS_1984',DATUM['D_WGS_1984',SPHEROID['WGS_1984',6378137.0,298.25"\
                                        "7223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]]",
                                        "NEAREST", "0.5 0.5", None, None,
@@ -41,17 +41,14 @@ def climate_variables(month, year, clim_var, locations, workspace):
                                         "7223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]];-400 -40"\
                                         "0 1000000000;-100000 10000;-100000 10000;8.98315284119521E-09;0.001;0.001;"\
                                         "IsHighPrecision")
-        out_point_features = (workspace + "Temperature Variable CRU/" + str(clim_var) + "/Specimen_Location_"\
-                              + str(year_number))
+        out_point_features = (output_folder + str(clim_var) + "/Specimen_Location_" + str(year_number))
         ExtractValuesToPoints(in_point_features, str(clim_var) + str(year_number) + ".tif", out_point_features, "NONE",
                               "Value_ONLY")
         # Export the saved file as a .csv file
-        fc = (workspace + "/Temperature Variable CRU/" + str(clim_var) + "/Specimen_Location_" + str(year_number)\
-              + ".shp")
+        fc = (output_folder + str(clim_var) + "/Specimen_Location_" + str(year_number) + ".shp")
         nparr = arcpy.da.FeatureClassToNumPyArray(fc, ['FID', 'Sample', 'RASTERVALU'])
         pdarr = pd.DataFrame(nparr)
-        pdarr.to_csv(workspace + "/Temperature Variable CRU/" + str(clim_var) + "/Specimen_Location_"\
-                     + str(year_number) + ".csv")
+        pdarr.to_csv(output_folder + str(clim_var) + "/Specimen_Location_" + str(year_number) + ".csv")
 
         print(year_number)
         #Remove extra rasters
@@ -69,9 +66,11 @@ location_df = pd.read_csv(env.workspace + "/morphdata_arcgis.csv", encoding="ISO
 # Set month and year
 summer_month = ["06", "07", "08"]
 specimen_year = set(location_df["Specimen.Year"])
+# Set where outputs will be saved
+output = env.workspace + "Temperature Variable CRU/"
 
 # Summer Temperatures
-climate_variables(summer_month, specimen_year, "tmp", location_df, env.workspace)
+climate_variables(summer_month, specimen_year, "tmp", location_df, env.workspace, output)
 
 # Summer precipitation
-climate_variables(summer_month, specimen_year, "pre", location_df, env.workspace)
+climate_variables(summer_month, specimen_year, "pre", location_df, env.workspace, output)
