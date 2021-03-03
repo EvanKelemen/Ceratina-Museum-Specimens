@@ -2,6 +2,7 @@ This repository describes the workflow used to analyze morphological changes in 
 
 
 Overview
+
 Morphological data is loaded and formatted in morphologicaldata.R
 
 Climate variables was extracted from raster files in ArcGIS Pro using in climate_variables.py
