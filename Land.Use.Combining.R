@@ -11,13 +11,13 @@ morph.data.lat.long <- subset(morph.data, !is.na(morph.data$Lat))
 
 # Using the Climate Research Unit (university of east anglia)
 # have to turn cell identity for Specimen Location 2018 and 2019 because it adds a leading zero
-morph.data.lat.long$average.temp <- combining.temperature.data.cru("Yearly Average", morph.data.lat.long)
-morph.data.lat.long$average.precip <- combining.temperature.data.cru("Yearly Precip Average", morph.data.lat.long)
-morph.data.lat.long$average.dtr <- combining.temperature.data.cru("DTR", morph.data.lat.long)
-morph.data.lat.long$frost.frequency <- combining.temperature.data.cru("FRS", morph.data.lat.long)
-morph.data.lat.long$wet.frequency <- combining.temperature.data.cru("WET", morph.data.lat.long)
-morph.data.lat.long$previous.summer <- combining.temperature.data.cru("Previous Summer", morph.data.lat.long)
-morph.data.lat.long$previous.precip <- combining.temperature.data.cru("Previous Precip", morph.data.lat.long)
+morph.data.lat.long$average.temp <- combining.temperature.data("Yearly Average", morph.data.lat.long)
+morph.data.lat.long$average.precip <- combining.temperature.data("Yearly Precip Average", morph.data.lat.long)
+morph.data.lat.long$average.dtr <- combining.temperature.data("DTR", morph.data.lat.long)
+morph.data.lat.long$frost.frequency <- combining.temperature.data("FRS", morph.data.lat.long)
+morph.data.lat.long$wet.frequency <- combining.temperature.data("WET", morph.data.lat.long)
+morph.data.lat.long$previous.summer <- combining.temperature.data("Previous Summer", morph.data.lat.long)
+morph.data.lat.long$previous.precip <- combining.temperature.data("Previous Precip", morph.data.lat.long)
 
 morph.data.lat.long <- subset(morph.data.lat.long, morph.data.lat.long$Specimen.Year > 1901)
 
