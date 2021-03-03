@@ -135,23 +135,14 @@ colnames(us.land.use.data) <- c("Decade", "Sample", column.names)
 
 
 # To makes sure all of the buffers have the same size
-us.land.use.data$sum <- us.land.use.data[, 3] +  us.land.use.data[,4] + us.land.use.data[,5] +  
-  us.land.use.data[,6] + us.land.use.data[,7] +  us.land.use.data[,8] + us.land.use.data[,9] +  
-  us.land.use.data[,10] + us.land.use.data[,11] +  us.land.use.data[,12] + us.land.use.data[,13] +  
-  us.land.use.data[,14] + us.land.use.data[,15] +  us.land.use.data[,16] + us.land.use.data[,17] +
-  us.land.use.data[,18] + us.land.use.data[,19] + us.land.use.data[,20] 
+us.land.use.data$sum <- rowSums(us.land.use.data[, 3:20]) 
 
 # Calculate Land Use
 us.land.use.data$Agriculture <- ((us.land.use.data[,16])/ us.land.use.data$sum) * 100
 us.land.use.data$Agriculture_raw <- (us.land.use.data[,16])
 
-us.land.use.data$Development <- ((us.land.use.data[, 5] +  us.land.use.data[,6] + us.land.use.data[,7] +  
-                        us.land.use.data[,8] + us.land.use.data[,9] +  us.land.use.data[,10] + us.land.use.data[,11] 
-                        + us.land.use.data[,12] + us.land.use.data[,13] + us.land.use.data[,14]
-                      ) /us.land.use.data$sum) * 100
-us.land.use.data$Development_raw <- (us.land.use.data[, 5] +  us.land.use.data[,6] + us.land.use.data[,7] +  
-                                    us.land.use.data[,8] + us.land.use.data[,9] +  us.land.use.data[,10] + us.land.use.data[,11]
-                                    + us.land.use.data[,12] + us.land.use.data[,13] + us.land.use.data[,14]) 
+us.land.use.data$Development <- rowSums(us.land.use.data[, 5:14]) / us.land.use.data$sum) * 100
+us.land.use.data$Development_raw <- rowSums(us.land.use.data[, 5:14]) 
 
 # When we remove NA measurement from morph.data, lost connecting sample to add lat and long
 us.land.use.data$Sample <- as.character(us.land.use.data$Sample)
@@ -208,16 +199,14 @@ colnames(ca.land.use.data) <- c("Decade", "Sample", column.names)
 
 
 # To makes sure all of the buffers have the same size
-ca.land.use.data$sum <- ca.land.use.data[, 3] +  ca.land.use.data[,4] + ca.land.use.data[,5] +  
-  ca.land.use.data[,6] + ca.land.use.data[,7] +  ca.land.use.data[,8] + ca.land.use.data[,9] +  
-  ca.land.use.data[,10] + ca.land.use.data[,11] +  ca.land.use.data[,12] + ca.land.use.data[,13]
+ca.land.use.data$sum <- rowSums(ca.land.use.data[, 3:13])
 
 
 ca.land.use.data$Agriculture <- ((ca.land.use.data[,10]) /ca.land.use.data$sum) * 100
 ca.land.use.data$Agriculture_raw <- (ca.land.use.data[,10])
 
-ca.land.use.data$Development <- ((ca.land.use.data[, 3] +  ca.land.use.data[,4]) /ca.land.use.data$sum) * 100
-ca.land.use.data$Development_raw <- (ca.land.use.data[, 3] +  ca.land.use.data[,4])
+ca.land.use.data$Development <- rowSums(ca.land.use.data[, 3:4]) /ca.land.use.data$sum) * 100
+ca.land.use.data$Development_raw <- rowSums(ca.land.use.data[, 3:4])
 
 
 for (lat_or_long in c("Lat", "Long")){
