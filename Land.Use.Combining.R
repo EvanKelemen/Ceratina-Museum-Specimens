@@ -10,7 +10,6 @@ source("./Combining.temperature.data.R")
 morph.data.lat.long <- subset(morph.data, !is.na(morph.data$Lat))
 
 # Using the Climate Research Unit (university of east anglia)
-# have to turn cell identity for Specimen Location 2018 and 2019 because it adds a leading zero
 morph.data.lat.long$average.temp <- combining.temperature.data("Yearly Average", morph.data.lat.long)
 morph.data.lat.long$average.precip <- combining.temperature.data("Yearly Precip Average", morph.data.lat.long)
 morph.data.lat.long$average.dtr <- combining.temperature.data("DTR", morph.data.lat.long)
