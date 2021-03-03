@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-# Calculating Change in temperature through time
+# Calculating Change in temperature and land-use through time
 #-------------------------------------------------------------------------------
 # Add required libraries
 require(raster)
