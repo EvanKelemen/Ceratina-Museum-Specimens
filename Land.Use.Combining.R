@@ -5,7 +5,6 @@
 source("./morphologicaldata.R")
 # Creates the function to combine temperature data to morphological data
 source("./Combining.temperature.data.R")
-source("C:/Users/evank/Documents/R/General Scripts/Rsquared.R")
 
 #Double check that only sample with geographic locations are included
 morph.data.lat.long <- subset(morph.data, !is.na(morph.data$Lat))
@@ -36,29 +35,19 @@ us.states <- c("WI", "IN", "NH", "MO", "NC", "VA", "GA", "AL", "TN", "IL", "PA",
 
 # Subset morphological data into the bins according to land use data.
 # US Data
-morph.data.1974.1981 <- subset(morph.data.lat.long, morph.data.lat.long$Specimen.Year >= 1974 &
-                                 morph.data.lat.long$Specimen.Year <= 1981 &
-                                 morph.data.lat.long$State.Province %in% us.states)
-morph.data.1974.1981$Decade <- 1974
+sub_by_time_us <- function(data_frame, first_year, last_year){
+  temp <- subset(morph.data.lat.long, morph.data.lat.long$Specimen.Year >= first_year &
+                   morph.data.lat.long$Specimen.Year <= last_year &
+                   morph.data.lat.long$State.Province %in% us.states)
+  temp["Decade"] <- first_year
+  return(temp)
+}
 
-morph.data.1982.1991 <- subset(morph.data.lat.long, morph.data.lat.long$Specimen.Year >= 1982 &
-                                 morph.data.lat.long$Specimen.Year <= 1991 &
-                                 morph.data.lat.long$State.Province %in% us.states)
-morph.data.1982.1991$Decade <- 1982
-
-morph.data.1992.2001 <- subset(morph.data.lat.long, morph.data.lat.long$Specimen.Year >= 1992 &
-                                 morph.data.lat.long$Specimen.Year <= 2001 &
-                                 morph.data.lat.long$State.Province %in% us.states)
-morph.data.1992.2001$Decade <- 1992
-
-morph.data.2002.2011 <- subset(morph.data.lat.long, morph.data.lat.long$Specimen.Year >= 2002 &
-                                 morph.data.lat.long$Specimen.Year <= 2011 &
-                                 morph.data.lat.long$State.Province %in% us.states)
-morph.data.2002.2011$Decade <- 2002
-
-morph.data.2012.beyond <- subset(morph.data.lat.long, morph.data.lat.long$Specimen.Year >= 2012 &
-                                 morph.data.lat.long$State.Province %in% us.states)
-morph.data.2012.beyond$Decade <- 2012
+morph.data.1974.1981 <- sub_by_time_us(morph.data.lat.long, 1974, 1981) 
+morph.data.1982.1991 <- sub_by_time_us(morph.data.lat.long, 1982, 1991)
+morph.data.1992.2001 <- sub_by_time_us(morph.data.lat.long, 1992, 2001)
+morph.data.2002.2011 <- sub_by_time_us(morph.data.lat.long, 2002, 2011)
+morph.data.2012.beyond <- sub_by_time_us(morph.data.lat.long, 2012, 2019)
 
 
 #Write the data to use in ARCGIS (need to remove duplicate locations)
@@ -89,20 +78,17 @@ rm(morph.data.1974.1981, morph.data.1982.1991,
 
 
 # CANADA Data
-morph.data.1990.1999.ca <- subset(morph.data.lat.long, morph.data.lat.long$Specimen.Year >= 1990 &
-                                 morph.data.lat.long$Specimen.Year <= 1999 &
-                                 !morph.data.lat.long$State.Province %in% us.states)
-morph.data.1990.1999.ca$Decade <- 1990
+sub_by_time_ca <- function(data_frame, first_year, last_year){
+  temp <- subset(morph.data.lat.long, morph.data.lat.long$Specimen.Year >= first_year &
+                   morph.data.lat.long$Specimen.Year <= last_year &
+                   ! morph.data.lat.long$State.Province %in% us.states)
+  temp["Decade"] <- first_year
+  return(temp)
+}
 
-morph.data.2000.2009.ca <- subset(morph.data.lat.long, morph.data.lat.long$Specimen.Year >= 2000 &
-                                 morph.data.lat.long$Specimen.Year <= 2009 &
-                                 !morph.data.lat.long$State.Province %in% us.states)
-morph.data.2000.2009.ca$Decade <- 2000
-
-morph.data.2010.2019.ca <- subset(morph.data.lat.long, morph.data.lat.long$Specimen.Year >= 2010 &
-                                 morph.data.lat.long$Specimen.Year <= 2019 &
-                                 !morph.data.lat.long$State.Province %in% us.states)
-morph.data.2010.2019.ca$Decade <- 2010
+morph.data.1990.1999.ca <- sub_by_time_ca(morph.data.lat.long, 1990, 1999)
+morph.data.2000.2009.ca <- sub_by_time_ca(morph.data.lat.long, 2000, 2009)
+morph.data.2010.2019.ca <- sub_by_time_ca(morph.data.lat.long, 2010, 2019)
 
 
 #for (time_slice in c(morph.data.1990.1999.ca, morph.data.2000.2009.ca, morph.data.2010.2019.ca)){
