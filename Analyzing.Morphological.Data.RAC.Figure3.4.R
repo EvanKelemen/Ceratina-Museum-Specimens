@@ -2,7 +2,7 @@
 # Figures 3 and 4
 #-------------------------------------------------------------------------------
 # Makes data.frame morph.data.lat.long
-source("./Final_Analyzing.Morphological.Data.RAC.LME.R")
+source("./Analyzing.Morphological.Data.RAC.LME.R")
 
 #Plotting Figure 3
 tiff("Temp.vs.Head.Width.tiff", width = 8, height = 5, pointsize = 1/300, units = 'in', res = 300)
