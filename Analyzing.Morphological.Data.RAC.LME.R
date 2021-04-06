@@ -21,7 +21,7 @@ source("./calculate_rac.R")
 #Subset to specimens with all measurements 
 morph.data.all.measurements <- subset(morph.data.temp, !is.na(morph.data.temp$Intertegular.Width.mm) &
                                         !is.na(morph.data.temp$Right.Wing.mm) & !is.na(morph.data.temp$Left.Wing.mm))
-#Intergegular Width  == 0.9435326
+#Intergegular Width == 0.9435326
 cor(morph.data.all.measurements$Head.Width.mm, morph.data.all.measurements$Intertegular.Width.mm)
 
 #Right Wing == 0.9556519
@@ -42,6 +42,7 @@ head.vs.year.interaction.lm <- lme(Head.Width.mm ~ Specimen.Year + Sex + Elevati
 morph.data.temp$focal_rac_vect_time <- calculate_rac(morph.data.temp, head.vs.year.interaction.lm)
 
 # fit the RAC model using the environmental variables and the residuals autocovariate
+# .var models allow for variance to increase with time
 head.vs.year.interaction.lm <- lme(Head.Width.mm ~ Specimen.Year * Sex + 
                                      Elevation + focal_rac_vect_time,  
                                    random =~1|Location.State, data = morph.data.temp)
