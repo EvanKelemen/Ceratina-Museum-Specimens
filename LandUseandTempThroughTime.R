@@ -7,10 +7,6 @@ require(sp)
 require(rgdal)
 library(lme4)
 
-#https://gis.stackexchange.com/questions/29118/how-to-find-the-average-raster-value-of-an-area-defined-by-a-shapefile-using-r
-# $ indicates that the pattern is at the end of the file name
-#rlist=list.files(getwd(), pattern="img$", full.names=TRUE) 
-
 #>>>>>>> Temperature Data
 # Compile the files
 rlist=list.files("C:/Users/evank/Documents/ArcGIS/Projects/Temperature/Temperature Variable CRU/Previous Summer", 
@@ -80,8 +76,8 @@ summary(precip.through.time.lm)
 
 
 
-#>>>>>>> Land USe 
-# Originally wanted to use a for loop to load in ever raster. So large, had to 
+#>>>>>>> Land Use 
+# Rasters are large and takes awhile to load might want to 
 # Load in one at a time
 
 us.year <- c(1974, 1982, 1992, 2002, 2012)
